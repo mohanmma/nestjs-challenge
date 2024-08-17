@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Task } from './task.entity';
@@ -21,6 +21,13 @@ export class TasksService {
     if (!assignee) {
       throw new NotFoundException('Assignee not found');
     }
+    if (task.due_date) {
+    const currentDate = new Date();
+    const dueDate = new Date(task.due_date);
+    if (dueDate < currentDate) {
+      throw new BadRequestException('Due date should be a future date');
+    }
+  }
   }
 
   return this.tasksRepository.save(task);
@@ -52,6 +59,14 @@ export class TasksService {
         throw new NotFoundException('Assignee not found');
       }
     }
+
+    if (task.due_date) {
+    const currentDate = new Date();
+    const dueDate = new Date(task.due_date);
+    if (dueDate < currentDate) {
+      throw new BadRequestException('Due date should be a future date');
+    }
+  }
 
     await this.tasksRepository.update(id, task);
     return { message: 'Task updated successfully' };
